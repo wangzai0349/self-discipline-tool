@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 打败拖延症 - 你的自律小助手</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部状态栏 -->
+        <header class="top-bar">
+            <div class="logo">🔥 打败拖延症</div>
+            <div class="date-info" id="dateInfo"></div>
+            <div class="quick-stats">
+                <span class="qs-item">⚡ 连续 <strong id="streak">0</strong> 天</span>
+                <span class="qs-item">🏆 <strong id="totalPoints">0</strong> 积分</span>
+                <button id="openPlanBtn" class="btn-plan">📅 周规划</button>
+                <button id="openReviewBtn" class="btn-review">🔍 复盘</button>
+                <button id="openSyncBtn" class="btn-sync">☁️ 同步</button>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 左侧：项目统计 + 任务区 -->
+            <div class="left-panel">
+                <!-- 项目统计 -->
+                <section class="project-stats-section">
+                    <div class="section-header">
+                        <h2>� 项目进度</h2>
+                        <button id="manageProjects" class="btn-add" title="管理项目">⚙️</button>
+                    </div>
+                    <div class="project-filter-tabs" id="projectFilterTabs">
+                        <button class="project-tab active" data-project="all">全部</button>
+                    </div>
+                    <div class="project-progress-list" id="projectProgressList"></div>
+                </section>
+
+                <!-- 每日基础任务 -->
+                <section class="task-section">
+                    <div class="section-header">
+                        <h2>📋 每日基础任务</h2>
+                        <span class="section-hint">每天都要完成</span>
+                    </div>
+                    <div class="task-list" id="baseTaskList"></div>
+                </section>
+
+                <!-- 当日临时任务 -->
+                <section class="task-section">
+                    <div class="section-header">
+                        <h2>📝 当日任务</h2>
+                        <button id="toggleDailyForm" class="btn-add">➕</button>
+                    </div>
+                    <div class="add-form hidden" id="dailyTaskForm">
+                        <select id="dailyTaskProject" class="project-select">
+                            <option value="">无项目</option>
+                        </select>
+                        <input type="text" id="dailyTaskInput" placeholder="添加今日任务" maxlength="50">
+                        <select id="dailyTaskPoints">
+                            <option value="5">5分</option>
+                            <option value="10" selected>10分</option>
+                            <option value="15">15分</option>
+                        </select>
+                        <button id="addDailyTask" class="btn-confirm">添加</button>
+                    </div>
+                    <div class="task-list" id="dailyTaskList"></div>
+                </section>
+            </div>
+
+            <!-- 中间：统计区 -->
+            <div class="center-panel">
+                <!-- 激励语 -->
+                <div class="motivation-box">
+                    <p id="motivationText">开始你的第一个任务吧！</p>
+                </div>
+
+                <!-- 今日统计 - 扇形图 -->
+                <div class="stats-card">
+                    <h3>📊 今日进度</h3>
+                    <div class="chart-container">
+                        <div class="pie-chart" id="todayChart">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="circle" id="todayCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <text x="18" y="20.35" class="percentage" id="todayPercent">0%</text>
+                            </svg>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="dot done"></span>已完成 <strong id="todayDone">0</strong></div>
+                            <div class="legend-item"><span class="dot pending"></span>未完成 <strong id="todayPending">0</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 本周统计 - 扇形图 -->
+                <div class="stats-card">
+                    <h3>📈 本周进度</h3>
+                    <div class="chart-container">
+                        <div class="pie-chart" id="weekChart">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="circle week" id="weekCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <text x="18" y="20.35" class="percentage" id="weekPercent">0%</text>
+                            </svg>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="dot done"></span>已完成 <strong id="weekDone">0</strong></div>
+                            <div class="legend-item"><span class="dot pending"></span>未完成 <strong id="weekPending">0</strong></div>
+                            <div class="legend-item"><span class="dot perfect"></span>完美天 <strong id="perfectDays">0</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 积分统计 -->
+                <div class="stats-card points-card">
+                    <h3>💰 积分统计</h3>
+                    <div class="points-display">
+                        <div class="points-total">
+                            <span class="points-num" id="pointsTotal">0</span>
+                            <span class="points-label">总积分</span>
+                        </div>
+                        <div class="points-today">
+                            <span class="points-num small" id="pointsToday">+0</span>
+                            <span class="points-label">今日获得</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- 成就徽章 -->
+                <div class="achievements-card">
+                    <h3>🎖️ 成就徽章</h3>
+                    <div class="badges" id="badges"></div>
+                </div>
+            </div>
+
+            <!-- 右侧：收入统计 + 未完成汇总 + 完成记录 -->
+            <div class="right-panel">
+                <!-- 收入记账本 -->
+                <section class="income-section">
+                    <div class="income-header-main">
+                        <h2>💵 收入记账本</h2>
+                        <button id="manageIncomeTypes" class="btn-small-icon" title="管理类型">⚙️</button>
+                    </div>
+                    
+                    <!-- 收入目标进度 -->
+                    <div class="income-goal-bar">
+                        <div class="goal-info">
+                            <span>目标：¥<span id="incomeGoal">0</span></span>
+                            <button id="setIncomeGoal" class="btn-tiny">修改</button>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="incomeProgressFill"></div>
+                        </div>
+                        <span class="progress-text" id="incomeProgressText">0%</span>
+                    </div>
+                    
+                    <!-- 添加收入 -->
+                    <div class="income-add-form">
+                        <select id="incomeTypeSelect" class="income-type-select"></select>
+                        <input type="number" id="incomeInput" placeholder="金额" min="0" step="0.01">
+                        <button id="addIncomeBtn" class="btn-confirm">记录</button>
+                    </div>
+                    
+                    <!-- 报表周期切换 -->
+                    <div class="report-tabs">
+                        <button class="tab-btn" data-period="3">近3天</button>
+                        <button class="tab-btn active" data-period="7">近一周</button>
+                        <button class="tab-btn" data-period="30">近一月</button>
+                    </div>
+                    
+                    <!-- 收入统计图 -->
+                    <div class="income-chart-container">
+                        <div class="income-summary">
+                            <div class="summary-item">
+                                <span class="summary-value" id="periodIncome">¥0</span>
+                                <span class="summary-label">周期收入</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-value" id="totalIncomeValue">¥0</span>
+                                <span class="summary-label">累计收入</span>
+                            </div>
+                        </div>
+                        <div class="income-bar-chart" id="incomeBarChart"></div>
+                        <div class="income-legend" id="incomeLegend"></div>
+                    </div>
+                    
+                    <!-- 收入明细 -->
+                    <div class="income-detail-list" id="incomeDetailList"></div>
+                </section>
+                
+                <section class="incomplete-section">
+                    <h2>⚠️ 本周未完成任务</h2>
+                    <div class="incomplete-list" id="incompleteList">
+                        <p class="empty-hint">暂无未完成任务，太棒了！</p>
+                    </div>
+                </section>
+                
+                <section class="history-section">
+                    <h2>📝 今日完成记录</h2>
+                    <div class="history-list" id="historyList">
+                        <p class="empty-hint">还没有完成记录</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- 周规划弹窗 -->
+    <div id="planModal" class="modal hidden">
+        <div class="modal-content plan-modal">
+            <div class="modal-header">
+                <h2>📅 每周任务规划</h2>
+                <button id="closePlanModal" class="btn-close">✕</button>
+            </div>
+            
+            <!-- 每日基础任务 -->
+            <div class="plan-section">
+                <h3>📋 每日基础任务</h3>
+                <p class="section-desc">每天都要完成的固定任务</p>
+                <div class="plan-form">
+                    <select id="planTaskProject" class="project-select">
+                        <option value="">无项目</option>
+                    </select>
+                    <input type="text" id="planTaskInput" placeholder="输入基础任务名称" maxlength="50">
+                    <button id="addPlanTask" class="btn-confirm">添加</button>
+                </div>
+                <div class="plan-list" id="planTaskList"></div>
+            </div>
+            
+            <!-- 预设当日任务 -->
+            <div class="plan-section">
+                <h3>📝 预设当日任务</h3>
+                <p class="section-desc">提前安排某一天的临时任务</p>
+                <div class="plan-form">
+                    <select id="presetTaskProject" class="project-select">
+                        <option value="">无项目</option>
+                    </select>
+                    <select id="presetDay" class="day-select">
+                        <option value="1">周一</option>
+                        <option value="2">周二</option>
+                        <option value="3">周三</option>
+                        <option value="4">周四</option>
+                        <option value="5">周五</option>
+                        <option value="6">周六</option>
+                        <option value="0">周日</option>
+                    </select>
+                    <input type="text" id="presetTaskInput" placeholder="输入任务名称" maxlength="50">
+                    <button id="addPresetTask" class="btn-confirm">添加</button>
+                </div>
+                <div class="preset-list" id="presetTaskList"></div>
+            </div>
+            
+            <button id="savePlan" class="btn-primary">完成规划</button>
+        </div>
+    </div>
+
+    <!-- 复盘弹窗 -->
+    <div id="reviewModal" class="modal hidden">
+        <div class="modal-content review-modal">
+            <div class="modal-header">
+                <h2>🔍 任务复盘</h2>
+                <button id="closeReviewModal" class="btn-close">✕</button>
+            </div>
+            <div class="review-date-picker">
+                <button id="prevDay" class="btn-nav">◀</button>
+                <input type="date" id="reviewDate">
+                <button id="nextDay" class="btn-nav">▶</button>
+            </div>
+            <div class="review-summary" id="reviewSummary"></div>
+            <div class="review-content">
+                <div class="review-section">
+                    <h3>📋 基础任务完成情况</h3>
+                    <div id="reviewBaseTasks"></div>
+                </div>
+                <div class="review-section">
+                    <h3>📝 当日任务完成情况</h3>
+                    <div id="reviewDailyTasks"></div>
+                </div>
+                <div class="review-section">
+                    <h3>⏰ 完成时间记录</h3>
+                    <div id="reviewHistory"></div>
+                </div>
+                <div class="review-section">
+                    <h3>💵 当日收入</h3>
+                    <div id="reviewIncome"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 项目管理弹窗 -->
+    <div id="projectModal" class="modal hidden">
+        <div class="modal-content type-modal">
+            <div class="modal-header">
+                <h2>📊 项目管理</h2>
+                <button id="closeProjectModal" class="btn-close">✕</button>
+            </div>
+            <div class="type-add-form">
+                <input type="text" id="newProjectName" placeholder="项目名称" maxlength="15">
+                <input type="color" id="newProjectColor" value="#667eea">
+                <button id="addProjectBtn" class="btn-confirm">添加</button>
+            </div>
+            <div class="type-list" id="projectList"></div>
+        </div>
+    </div>
+
+    <!-- 数据同步弹窗 -->
+    <div id="syncModal" class="modal hidden">
+        <div class="modal-content sync-modal">
+            <div class="modal-header">
+                <h2>☁️ 数据同步</h2>
+                <button id="closeSyncModal" class="btn-close">✕</button>
+            </div>
+            
+            <div class="sync-section">
+                <h3>📤 导出数据</h3>
+                <p class="sync-desc">将所有数据导出为文件，可以在其他设备导入</p>
+                <button id="exportDataBtn" class="btn-primary">导出到文件</button>
+            </div>
+            
+            <div class="sync-section">
+                <h3>📥 导入数据</h3>
+                <p class="sync-desc">从文件导入数据（会覆盖当前数据）</p>
+                <input type="file" id="importFileInput" accept=".json" style="display:none;">
+                <button id="importDataBtn" class="btn-primary">从文件导入</button>
+            </div>
+            
+            <div class="sync-section">
+                <h3>☁️ 云端自动同步</h3>
+                <p class="sync-desc">配置后数据会自动同步到云端，手机和电脑实时同步</p>
+                
+                <div class="cloud-sync-config" id="cloudSyncConfig">
+                    <div class="config-status" id="cloudSyncStatus">
+                        <span class="status-dot offline"></span>
+                        <span>未配置</span>
+                    </div>
+                    
+                    <div class="config-form" id="cloudConfigForm">
+                        <input type="text" id="cloudUserId" placeholder="输入你的用户ID（任意字符，用于识别）" maxlength="20">
+                        <input type="password" id="cloudPassword" placeholder="设置密码（用于加密数据）" maxlength="20">
+                        <button id="enableCloudSyncBtn" class="btn-primary">启用云同步</button>
+                    </div>
+                    
+                    <div class="config-info hidden" id="cloudConfigInfo">
+                        <p>✅ 云同步已启用（数据已加密）</p>
+                        <p>用户ID: <strong id="currentUserId"></strong></p>
+                        <p>最后同步: <span id="lastSyncTime">-</span></p>
+                        <div class="config-actions">
+                            <button id="manualSyncBtn" class="btn-secondary">立即同步</button>
+                            <button id="disableCloudSyncBtn" class="btn-secondary">停用</button>
+                        </div>
+                    </div>
+                    
+                    <div class="sync-tips">
+                        <p>💡 使用说明：</p>
+                        <ul>
+                            <li>设置一个用户ID和密码</li>
+                            <li>数据会用密码加密后上传到云端</li>
+                            <li>在其他设备输入相同的ID和密码才能解密</li>
+                            <li>即使别人知道你的ID，没有密码也无法查看数据</li>
+                            <li>⚠️ 密码忘记无法找回，请务必记住！</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sync-section">
+                <h3>🔄 快速同步码</h3>
+                <p class="sync-desc">生成同步码，在其他设备输入即可同步</p>
+                <div class="sync-code-area">
+                    <textarea id="syncCodeOutput" readonly placeholder="点击生成同步码"></textarea>
+                    <div class="sync-code-buttons">
+                        <button id="generateCodeBtn" class="btn-secondary">生成同步码</button>
+                        <button id="copyCodeBtn" class="btn-secondary">复制</button>
+                    </div>
+                </div>
+                <div class="sync-code-area">
+                    <textarea id="syncCodeInput" placeholder="粘贴同步码并应用"></textarea>
+                    <button id="applyCodeBtn" class="btn-primary">应用同步码</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 收入类型管理弹窗 -->
+    <div id="incomeTypeModal" class="modal hidden">
+        <div class="modal-content type-modal">
+            <div class="modal-header">
+                <h2>💵 收入类型管理</h2>
+                <button id="closeTypeModal" class="btn-close">✕</button>
+            </div>
+            <div class="type-add-form">
+                <input type="text" id="newTypeName" placeholder="类型名称" maxlength="10">
+                <input type="color" id="newTypeColor" value="#667eea">
+                <button id="addTypeBtn" class="btn-confirm">添加</button>
+            </div>
+            <div class="type-list" id="typeList"></div>
+        </div>
+    </div>
+
+    <!-- 庆祝动画 -->
+    <div id="celebration" class="celebration hidden"></div>
+    
+    <!-- 通用弹窗 -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <button id="closeModal" class="btn-confirm">好的！</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    
+    <!-- LeanCloud SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.0/dist/av-min.js"></script>
+</body>
+</html>
