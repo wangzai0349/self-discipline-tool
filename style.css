@@ -993,17 +993,30 @@ body {
 
 /* 同步弹窗 */
 .sync-modal {
-    max-width: 550px;
-    width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
+    max-width: none;
+    width: 85vw;
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: hidden;
     text-align: left;
+    padding: 30px 40px;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .sync-modal {
+        width: 92vw;
+        padding: 20px;
+    }
 }
 
 .sync-section {
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 35px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .sync-section:last-child {
@@ -1011,15 +1024,36 @@ body {
 }
 
 .sync-section h3 {
-    font-size: 1rem;
+    font-size: 1.3rem;
     color: #333;
-    margin-bottom: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .sync-desc {
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #666;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .sync-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+    }
+    
+    .sync-section h3 {
+        font-size: 1.1rem;
+    }
+    
+    .sync-desc {
+        font-size: 0.9rem;
+    }
 }
 
 .sync-status {
@@ -1036,14 +1070,14 @@ body {
 
 .sync-code-area textarea {
     width: 100%;
-    min-height: 80px;
-    padding: 10px;
+    min-height: 100px;
+    padding: 12px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-family: monospace;
     resize: vertical;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .sync-code-area textarea:focus {
@@ -1057,9 +1091,19 @@ body {
 }
 
 .cloud-sync-config {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .cloud-sync-config {
+        padding: 18px;
+    }
 }
 
 .config-status {
@@ -1087,35 +1131,72 @@ body {
 }
 
 .config-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .config-form input {
-    flex: 1;
-    padding: 10px;
+    padding: 16px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .config-form input:focus {
     outline: none;
     border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.config-form button {
+    grid-column: span 2;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .config-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .config-form button {
+        grid-column: span 1;
+    }
+    
+    .config-form input {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
 }
 
 .config-info {
-    background: #d4edda;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(39, 174, 96, 0.1);
 }
 
 .config-info p {
-    margin: 5px 0;
-    font-size: 0.9rem;
+    margin: 6px 0;
+    font-size: 0.95rem;
     color: #155724;
+}
+
+@media (max-width: 768px) {
+    .config-info {
+        padding: 15px;
+    }
+    
+    .config-info p {
+        font-size: 0.9rem;
+    }
 }
 
 .config-actions {
@@ -1125,41 +1206,69 @@ body {
 }
 
 .sync-tips {
-    background: #fff3cd;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 0.95rem;
     color: #856404;
+    box-shadow: 0 2px 6px rgba(255, 193, 7, 0.1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .sync-tips p {
-    margin: 0 0 8px 0;
-    font-weight: 500;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .sync-tips ul {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 25px;
 }
 
 .sync-tips li {
-    margin: 4px 0;
+    margin: 8px 0;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .sync-tips {
+        padding: 15px;
+        font-size: 0.85rem;
+    }
+    
+    .sync-tips ul {
+        padding-left: 18px;
+    }
 }
 
 .btn-secondary {
     flex: 1;
-    background: #95a5a6;
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
     color: white;
     border: none;
-    padding: 10px 16px;
+    padding: 12px 18px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: background 0.2s;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(149, 165, 166, 0.3);
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(149, 165, 166, 0.4);
+}
+
+@media (max-width: 768px) {
+    .btn-secondary {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
 }
 
 .type-add-form {
@@ -1327,9 +1436,11 @@ body {
     height: 100%;
     background: rgba(0,0,0,0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 2000;
+    overflow-y: auto;
+    padding: 40px 0;
 }
 
 .modal-content {
@@ -1339,6 +1450,7 @@ body {
     text-align: center;
     max-width: 350px;
     animation: modalPop 0.3s ease;
+    overflow: hidden;
 }
 
 @keyframes modalPop {
@@ -1547,15 +1659,29 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 14px;
+    padding: 16px;
     border-radius: 10px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .btn-primary {
+        padding: 14px;
+        font-size: 0.95rem;
+    }
 }
 
 /* 复盘弹窗 */
@@ -1765,21 +1891,86 @@ body {
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
     .main-content {
         grid-template-columns: 1fr;
+        padding: 15px 10px;
+        gap: 15px;
     }
+    
     .right-panel {
         grid-column: span 1;
     }
+    
     .top-bar {
-        justify-content: center;
+        padding: 12px 15px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
     }
+    
+    .logo {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+    
+    .date-info {
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    
+    .quick-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .qs-item {
+        font-size: 0.85rem;
+    }
+    
+    .btn-plan, .btn-review, .btn-sync {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+        flex: 1;
+        min-width: 90px;
+    }
+    
     .chart-container {
         flex-direction: column;
         text-align: center;
     }
+    
     .pie-chart {
-        margin: 0 auto;
+        margin: 0 auto 15px;
+    }
+    
+    .task-section, .stats-card, .achievements-card,
+    .incomplete-section, .history-section, .income-section,
+    .project-stats-section {
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .section-header h2 {
+        font-size: 1rem;
+    }
+    
+    .task-item {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .modal-content {
+        max-width: 95%;
+        padding: 20px;
+    }
+    
+    .plan-modal, .review-modal {
+        max-width: 95%;
     }
 }
