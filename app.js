@@ -7,10 +7,6 @@ const Storage = {
     },
     set(key, val) {
         localStorage.setItem('sd_' + key, JSON.stringify(val));
-        // 数据变化时自动同步到云端
-        if (typeof pushToCloud === 'function' && state.cloudSyncEnabled) {
-            pushToCloud();
-        }
     }
 };
 
@@ -69,9 +65,7 @@ const state = {
     achievements: Storage.get('achievements', {})
 };
 
-// 云同步配置
-const CLOUD_API = 'https://api.jsonbin.io/v3/b';
-const CLOUD_API_KEY = '$2a$10$8vZ9YqH5xH5xH5xH5xH5xOeKqH5xH5xH5xH5xH5xH5xH5xH5xH5x'; // 公共测试key
+// 云同步配置 - 已移除，推荐使用浏览器自带同步功能
 
 // 简单的加密/解密函数
 function simpleEncrypt(text, password) {
@@ -157,7 +151,6 @@ function init() {
     cleanOldData();
     renderAll();
     setupEvents();
-    initCloudSync(); // 初始化云同步
 }
 
 // 应用预设任务到当日
@@ -931,220 +924,8 @@ function applySyncCode() {
     }
 }
 
-// 云同步功能
-function initCloudSync() {
-    if (state.cloudSyncEnabled && state.cloudUserId) {
-        updateCloudSyncStatus(true);
-        // 启动时从云端拉取一次
-        pullFromCloud();
-        // 每5分钟自动同步一次
-        setInterval(() => {
-            if (state.cloudSyncEnabled) {
-                pushToCloud();
-            }
-        }, 5 * 60 * 1000);
-    }
-}
-
-function updateCloudSyncStatus(enabled) {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('.config-status span:last-child');
-    const configForm = document.getElementById('cloudConfigForm');
-    const configInfo = document.getElementById('cloudConfigInfo');
-    
-    if (enabled) {
-        statusDot.classList.remove('offline');
-        statusDot.classList.add('online');
-        statusText.textContent = '已连接';
-        configForm.classList.add('hidden');
-        configInfo.classList.remove('hidden');
-        document.getElementById('currentUserId').textContent = state.cloudUserId;
-    } else {
-        statusDot.classList.remove('online');
-        statusDot.classList.add('offline');
-        statusText.textContent = '未配置';
-        configForm.classList.remove('hidden');
-        configInfo.classList.add('hidden');
-    }
-}
-
-function enableCloudSync() {
-    const userId = document.getElementById('cloudUserId').value.trim();
-    const password = document.getElementById('cloudPassword').value.trim();
-    
-    if (!userId) {
-        showModal('⚠️ 提示', '请输入用户ID！');
-        return;
-    }
-    
-    if (!password) {
-        showModal('⚠️ 提示', '请设置密码！');
-        return;
-    }
-    
-    if (userId.length < 6) {
-        showModal('⚠️ 提示', '用户ID至少6个字符！');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showModal('⚠️ 提示', '密码至少6个字符，建议使用复杂密码！');
-        return;
-    }
-    
-    state.cloudSyncEnabled = true;
-    state.cloudUserId = userId;
-    Storage.set('cloudSyncEnabled', true);
-    Storage.set('cloudUserId', userId);
-    Storage.set('cloudPassword', password); // 存储密码（仅本地）
-    
-    updateCloudSyncStatus(true);
-    
-    // 首次启用，推送数据到云端
-    pushToCloud();
-    
-    showModal('✅ 云同步已启用', '数据将加密后同步到云端，请在其他设备使用相同的用户ID和密码！<br><br>⚠️ 密码忘记无法找回，请务必记住！');
-}
-
-function disableCloudSync() {
-    if (!confirm('确定要停用云同步吗？本地数据不会被删除。')) {
-        return;
-    }
-    
-    state.cloudSyncEnabled = false;
-    state.cloudUserId = '';
-    Storage.set('cloudSyncEnabled', false);
-    Storage.set('cloudUserId', '');
-    
-    updateCloudSyncStatus(false);
-    showModal('✅ 已停用', '云同步已停用');
-}
-
-async function pushToCloud() {
-    if (!state.cloudSyncEnabled || !state.cloudUserId) return;
-    
-    try {
-        const allData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith('sd_') && key !== 'sd_cloudPassword') { // 不上传密码
-                allData[key] = localStorage.getItem(key);
-            }
-        }
-        
-        const dataStr = JSON.stringify(allData);
-        const password = Storage.get('cloudPassword', '');
-        
-        // 加密数据
-        const encryptedData = password ? simpleEncrypt(dataStr, password) : dataStr;
-        
-        const dataToSync = {
-            userId: state.cloudUserId,
-            data: encryptedData,
-            encrypted: !!password,
-            timestamp: new Date().toISOString()
-        };
-        
-        // 使用JSONBin.io免费API
-        const binId = Storage.get('cloudBinId', '');
-        
-        if (binId) {
-            // 更新已有数据
-            await fetch(`${CLOUD_API}/${binId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': CLOUD_API_KEY
-                },
-                body: JSON.stringify(dataToSync)
-            });
-        } else {
-            // 创建新数据
-            const response = await fetch(CLOUD_API, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': CLOUD_API_KEY,
-                    'X-Bin-Name': `sd_${state.cloudUserId}`
-                },
-                body: JSON.stringify(dataToSync)
-            });
-            const result = await response.json();
-            if (result.metadata && result.metadata.id) {
-                Storage.set('cloudBinId', result.metadata.id);
-            }
-        }
-        
-        const now = new Date().toLocaleString('zh-CN');
-        document.getElementById('lastSyncTime').textContent = now;
-        Storage.set('lastSyncTime', now);
-        
-    } catch (err) {
-        console.error('云同步失败:', err);
-    }
-}
-
-async function pullFromCloud() {
-    if (!state.cloudSyncEnabled || !state.cloudUserId) return;
-    
-    try {
-        const binId = Storage.get('cloudBinId', '');
-        if (!binId) return;
-        
-        const response = await fetch(`${CLOUD_API}/${binId}/latest`, {
-            headers: {
-                'X-Master-Key': CLOUD_API_KEY
-            }
-        });
-        
-        const result = await response.json();
-        if (result.record && result.record.userId === state.cloudUserId) {
-            const cloudData = result.record.data;
-            const isEncrypted = result.record.encrypted;
-            
-            let dataToApply;
-            
-            if (isEncrypted) {
-                const password = Storage.get('cloudPassword', '');
-                if (!password) {
-                    showModal('⚠️ 需要密码', '云端数据已加密，请先输入密码启用云同步！');
-                    return;
-                }
-                
-                // 解密数据
-                const decrypted = simpleDecrypt(cloudData, password);
-                if (!decrypted) {
-                    showModal('❌ 解密失败', '密码错误或数据损坏！');
-                    return;
-                }
-                
-                dataToApply = JSON.parse(decrypted);
-            } else {
-                dataToApply = JSON.parse(cloudData);
-            }
-            
-            // 应用数据
-            Object.keys(dataToApply).forEach(key => {
-                localStorage.setItem(key, dataToApply[key]);
-            });
-            
-            const now = new Date().toLocaleString('zh-CN');
-            document.getElementById('lastSyncTime').textContent = now;
-            Storage.set('lastSyncTime', now);
-            
-            // 刷新页面以应用新数据
-            location.reload();
-        }
-    } catch (err) {
-        console.error('拉取云端数据失败:', err);
-    }
-}
-
-function manualSync() {
-    pushToCloud().then(() => {
-        showModal('✅ 同步成功', '数据已同步到云端！');
-    });
-}
+// 云同步功能已移除 - 推荐使用 Edge 浏览器自带的同步功能
+// 如需手动同步，请使用上方的"快速同步码"功能
 
 // 渲染未完成任务
 function renderIncomplete() {
@@ -1663,9 +1444,6 @@ function setupEvents() {
     document.getElementById('generateCodeBtn').onclick = generateSyncCode;
     document.getElementById('copyCodeBtn').onclick = copySyncCode;
     document.getElementById('applyCodeBtn').onclick = applySyncCode;
-    document.getElementById('enableCloudSyncBtn').onclick = enableCloudSync;
-    document.getElementById('disableCloudSyncBtn').onclick = disableCloudSync;
-    document.getElementById('manualSyncBtn').onclick = manualSync;
     
     // 项目管理
     document.getElementById('manageProjects').onclick = openProjectModal;

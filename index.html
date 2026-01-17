@@ -329,42 +329,25 @@
             </div>
             
             <div class="sync-section">
-                <h3>☁️ 云端自动同步</h3>
-                <p class="sync-desc">配置后数据会自动同步到云端，手机和电脑实时同步</p>
+                <h3>☁️ 浏览器自动同步（推荐）</h3>
+                <p class="sync-desc">使用 Edge 浏览器的同步功能，数据自动同步到所有设备</p>
                 
-                <div class="cloud-sync-config" id="cloudSyncConfig">
-                    <div class="config-status" id="cloudSyncStatus">
-                        <span class="status-dot offline"></span>
-                        <span>未配置</span>
-                    </div>
-                    
-                    <div class="config-form" id="cloudConfigForm">
-                        <input type="text" id="cloudUserId" placeholder="输入你的用户ID（任意字符，用于识别）" maxlength="20">
-                        <input type="password" id="cloudPassword" placeholder="设置密码（用于加密数据）" maxlength="20">
-                        <button id="enableCloudSyncBtn" class="btn-primary">启用云同步</button>
-                    </div>
-                    
-                    <div class="config-info hidden" id="cloudConfigInfo">
-                        <p>✅ 云同步已启用（数据已加密）</p>
-                        <p>用户ID: <strong id="currentUserId"></strong></p>
-                        <p>最后同步: <span id="lastSyncTime">-</span></p>
-                        <div class="config-actions">
-                            <button id="manualSyncBtn" class="btn-secondary">立即同步</button>
-                            <button id="disableCloudSyncBtn" class="btn-secondary">停用</button>
-                        </div>
-                    </div>
-                    
-                    <div class="sync-tips">
-                        <p>💡 使用说明：</p>
-                        <ul>
-                            <li>设置一个用户ID和密码</li>
-                            <li>数据会用密码加密后上传到云端</li>
-                            <li>在其他设备输入相同的ID和密码才能解密</li>
-                            <li>即使别人知道你的ID，没有密码也无法查看数据</li>
-                            <li>⚠️ 密码忘记无法找回，请务必记住！</li>
-                        </ul>
-                    </div>
+                <div class="sync-tips">
+                    <p>💡 使用方法：</p>
+                    <ul>
+                        <li>1. 电脑和手机都安装 Edge 浏览器</li>
+                        <li>2. 登录同一个微软账号</li>
+                        <li>3. 打开 Edge 设置 → 个人资料 → 同步</li>
+                        <li>4. 确保"收藏夹、设置和其他数据"已开启</li>
+                        <li>5. 在两台设备上打开本网站，数据会自动同步</li>
+                        <li>✅ 完全免费、安全、无需配置</li>
+                    </ul>
                 </div>
+            </div>
+            
+            <div class="sync-section">
+                <h3>🔄 手动同步（备用方案）</h3>
+                <p class="sync-desc">如果浏览器同步不可用，可以使用快速同步码</p>
             </div>
             
             <div class="sync-section">
