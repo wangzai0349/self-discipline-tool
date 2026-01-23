@@ -16,6 +16,8 @@
                 <span class="qs-item">⚡ 连续 <strong id="streak">0</strong> 天</span>
                 <span class="qs-item">🏆 <strong id="totalPoints">0</strong> 积分</span>
                 <button id="openPlanBtn" class="btn-plan">📅 周规划</button>
+                <button id="openMonthPlanBtn" class="btn-plan">� 月度计划</button>
+                <button id="openYearPlanBtn" class="btn-plan">🎯 年度计划</button>
                 <button id="openReviewBtn" class="btn-review">🔍 复盘</button>
                 <button id="openSyncBtn" class="btn-sync">☁️ 同步</button>
             </div>
@@ -146,15 +148,44 @@
                     </div>
                     
                     <!-- 收入目标进度 -->
-                    <div class="income-goal-bar">
-                        <div class="goal-info">
-                            <span>目标：¥<span id="incomeGoal">0</span></span>
-                            <button id="setIncomeGoal" class="btn-tiny">修改</button>
+                    <div class="income-goals-container">
+                        <!-- 总收入显示 -->
+                        <div class="total-income-display">
+                            <span class="total-label">总收入</span>
+                            <span class="total-value" id="totalIncomeValue">¥0</span>
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="incomeProgressFill"></div>
+                        
+                        <!-- 月度目标 -->
+                        <div class="income-goal-item">
+                            <div class="goal-header">
+                                <span class="goal-label">📅 本月目标</span>
+                                <button id="setMonthGoal" class="btn-tiny">设置</button>
+                            </div>
+                            <div class="goal-amount">¥<span id="monthGoal">0</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="monthProgressFill"></div>
+                            </div>
+                            <div class="goal-stats">
+                                <span id="monthIncome">¥0</span>
+                                <span id="monthPercent">0%</span>
+                            </div>
                         </div>
-                        <span class="progress-text" id="incomeProgressText">0%</span>
+                        
+                        <!-- 年度目标 -->
+                        <div class="income-goal-item">
+                            <div class="goal-header">
+                                <span class="goal-label">🎯 年度目标</span>
+                                <button id="setYearGoal" class="btn-tiny">设置</button>
+                            </div>
+                            <div class="goal-amount">¥<span id="yearGoal">0</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="yearProgressFill"></div>
+                            </div>
+                            <div class="goal-stats">
+                                <span id="yearIncome">¥0</span>
+                                <span id="yearPercent">0%</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- 添加收入 -->
@@ -254,6 +285,56 @@
             </div>
             
             <button id="savePlan" class="btn-primary">完成规划</button>
+        </div>
+    </div>
+
+    <!-- 月度计划弹窗 -->
+    <div id="monthPlanModal" class="modal hidden">
+        <div class="modal-content plan-modal">
+            <div class="modal-header">
+                <h2>📆 本月计划</h2>
+                <button id="closeMonthPlanModal" class="btn-close">✕</button>
+            </div>
+            
+            <div class="plan-section">
+                <h3>📋 本月目标任务</h3>
+                <p class="section-desc">本月要完成的重要任务</p>
+                <div class="plan-form">
+                    <select id="monthTaskProject" class="project-select">
+                        <option value="">无项目</option>
+                    </select>
+                    <input type="text" id="monthTaskInput" placeholder="输入月度任务" maxlength="100">
+                    <button id="addMonthTask" class="btn-confirm">添加</button>
+                </div>
+                <div class="plan-list" id="monthTaskList"></div>
+            </div>
+            
+            <button id="saveMonthPlan" class="btn-primary">保存计划</button>
+        </div>
+    </div>
+
+    <!-- 年度计划弹窗 -->
+    <div id="yearPlanModal" class="modal hidden">
+        <div class="modal-content plan-modal">
+            <div class="modal-header">
+                <h2>🎯 年度计划</h2>
+                <button id="closeYearPlanModal" class="btn-close">✕</button>
+            </div>
+            
+            <div class="plan-section">
+                <h3>📋 年度目标任务</h3>
+                <p class="section-desc">今年要完成的重要目标</p>
+                <div class="plan-form">
+                    <select id="yearTaskProject" class="project-select">
+                        <option value="">无项目</option>
+                    </select>
+                    <input type="text" id="yearTaskInput" placeholder="输入年度任务" maxlength="100">
+                    <button id="addYearTask" class="btn-confirm">添加</button>
+                </div>
+                <div class="plan-list" id="yearTaskList"></div>
+            </div>
+            
+            <button id="saveYearPlan" class="btn-primary">保存计划</button>
         </div>
     </div>
 

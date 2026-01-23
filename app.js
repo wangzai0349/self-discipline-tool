@@ -50,7 +50,10 @@ const state = {
     completionHistory: Storage.get('completionHistory', {}), // { date: [{task, time}] }
     incomeRecords: Storage.get('incomeRecords', {}), // { date: [{amount, type, time}] }
     incomeTypes: Storage.get('incomeTypes', []),
-    incomeGoal: Storage.get('incomeGoal', 10000),
+    monthGoal: Storage.get('monthGoal', 10000),
+    yearGoal: Storage.get('yearGoal', 100000),
+    monthTasks: Storage.get('monthTasks', []), // 月度计划任务
+    yearTasks: Storage.get('yearTasks', []), // 年度计划任务
     totalIncome: Storage.get('totalIncome', 0),
     currentPeriod: 7, // 默认一周
     projects: Storage.get('projects', []), // 项目列表
@@ -352,7 +355,7 @@ function renderProjectProgress() {
 
 // 渲染项目选择器
 function renderProjectSelects() {
-    const selects = ['dailyTaskProject', 'planTaskProject', 'presetTaskProject'];
+    const selects = ['dailyTaskProject', 'planTaskProject', 'presetTaskProject', 'monthTaskProject', 'yearTaskProject'];
     const options = '<option value="">无项目</option>' + 
         state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
     
@@ -518,12 +521,44 @@ function renderIncomeTypeSelect() {
 
 // 渲染收入目标进度
 function renderIncomeGoalProgress() {
-    document.getElementById('incomeGoal').textContent = state.incomeGoal.toLocaleString();
+    // 总收入
     document.getElementById('totalIncomeValue').textContent = '¥' + state.totalIncome.toFixed(2);
     
-    const percent = state.incomeGoal > 0 ? Math.min(100, Math.round((state.totalIncome / state.incomeGoal) * 100)) : 0;
-    document.getElementById('incomeProgressFill').style.width = percent + '%';
-    document.getElementById('incomeProgressText').textContent = percent + '%';
+    // 计算本月收入
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = now;
+    let monthIncome = 0;
+    
+    for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toDateString();
+        const records = state.incomeRecords[dateStr] || [];
+        records.forEach(r => monthIncome += r.amount);
+    }
+    
+    // 计算本年收入
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    let yearIncome = 0;
+    
+    for (let d = new Date(yearStart); d <= now; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toDateString();
+        const records = state.incomeRecords[dateStr] || [];
+        records.forEach(r => yearIncome += r.amount);
+    }
+    
+    // 月度目标
+    document.getElementById('monthGoal').textContent = state.monthGoal.toLocaleString();
+    document.getElementById('monthIncome').textContent = '¥' + monthIncome.toFixed(2);
+    const monthPercent = state.monthGoal > 0 ? Math.min(100, Math.round((monthIncome / state.monthGoal) * 100)) : 0;
+    document.getElementById('monthProgressFill').style.width = monthPercent + '%';
+    document.getElementById('monthPercent').textContent = monthPercent + '%';
+    
+    // 年度目标
+    document.getElementById('yearGoal').textContent = state.yearGoal.toLocaleString();
+    document.getElementById('yearIncome').textContent = '¥' + yearIncome.toFixed(2);
+    const yearPercent = state.yearGoal > 0 ? Math.min(100, Math.round((yearIncome / state.yearGoal) * 100)) : 0;
+    document.getElementById('yearProgressFill').style.width = yearPercent + '%';
+    document.getElementById('yearPercent').textContent = yearPercent + '%';
 }
 
 // 获取周期内的日期列表
@@ -678,13 +713,27 @@ function deleteIncomeRecord(index) {
 }
 
 // 设置收入目标
-function setIncomeGoal() {
-    const newGoal = prompt('请输入收入目标金额：', state.incomeGoal);
+// 设置月度目标
+function setMonthGoal() {
+    const newGoal = prompt('请输入本月收入目标金额：', state.monthGoal);
     if (newGoal !== null) {
         const goal = parseFloat(newGoal);
         if (!isNaN(goal) && goal > 0) {
-            state.incomeGoal = goal;
-            Storage.set('incomeGoal', state.incomeGoal);
+            state.monthGoal = goal;
+            Storage.set('monthGoal', state.monthGoal);
+            renderIncome();
+        }
+    }
+}
+
+// 设置年度目标
+function setYearGoal() {
+    const newGoal = prompt('请输入年度收入目标金额：', state.yearGoal);
+    if (newGoal !== null) {
+        const goal = parseFloat(newGoal);
+        if (!isNaN(goal) && goal > 0) {
+            state.yearGoal = goal;
+            Storage.set('yearGoal', state.yearGoal);
             renderIncome();
         }
     }
@@ -1433,6 +1482,132 @@ function deletePresetTask(day, index) {
     }
 }
 
+// 月度计划相关
+function openMonthPlanModal() {
+    renderMonthTaskList();
+    document.getElementById('monthPlanModal').classList.remove('hidden');
+}
+
+function closeMonthPlanModal() {
+    document.getElementById('monthPlanModal').classList.add('hidden');
+}
+
+function renderMonthTaskList() {
+    const list = document.getElementById('monthTaskList');
+    if (state.monthTasks.length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">还没有月度计划，添加一些吧</p>';
+        return;
+    }
+    list.innerHTML = state.monthTasks.map((t, i) => {
+        const project = state.projects.find(p => p.id === t.projectId);
+        const projectTag = project ? `<span class="task-project-tag" style="background:${project.color}">${project.name}</span>` : '';
+        const completedClass = t.completed ? 'completed' : '';
+        return `
+            <div class="plan-item ${completedClass}">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleMonthTask(${i})">
+                <span class="task-text">${escapeHtml(t.text)}</span>
+                ${projectTag}
+                <button class="btn-del" data-index="${i}">🗑️</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function addMonthTask() {
+    const input = document.getElementById('monthTaskInput');
+    const projectSelect = document.getElementById('monthTaskProject');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const projectId = projectSelect.value ? parseInt(projectSelect.value) : null;
+    
+    state.monthTasks.push({
+        id: Date.now(),
+        text: text,
+        projectId: projectId,
+        completed: false,
+        createdAt: new Date().toISOString()
+    });
+    Storage.set('monthTasks', state.monthTasks);
+    input.value = '';
+    renderMonthTaskList();
+}
+
+function toggleMonthTask(index) {
+    state.monthTasks[index].completed = !state.monthTasks[index].completed;
+    Storage.set('monthTasks', state.monthTasks);
+    renderMonthTaskList();
+}
+
+function deleteMonthTask(index) {
+    state.monthTasks.splice(index, 1);
+    Storage.set('monthTasks', state.monthTasks);
+    renderMonthTaskList();
+}
+
+// 年度计划相关
+function openYearPlanModal() {
+    renderYearTaskList();
+    document.getElementById('yearPlanModal').classList.remove('hidden');
+}
+
+function closeYearPlanModal() {
+    document.getElementById('yearPlanModal').classList.add('hidden');
+}
+
+function renderYearTaskList() {
+    const list = document.getElementById('yearTaskList');
+    if (state.yearTasks.length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">还没有年度计划，添加一些吧</p>';
+        return;
+    }
+    list.innerHTML = state.yearTasks.map((t, i) => {
+        const project = state.projects.find(p => p.id === t.projectId);
+        const projectTag = project ? `<span class="task-project-tag" style="background:${project.color}">${project.name}</span>` : '';
+        const completedClass = t.completed ? 'completed' : '';
+        return `
+            <div class="plan-item ${completedClass}">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleYearTask(${i})">
+                <span class="task-text">${escapeHtml(t.text)}</span>
+                ${projectTag}
+                <button class="btn-del" data-index="${i}">🗑️</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function addYearTask() {
+    const input = document.getElementById('yearTaskInput');
+    const projectSelect = document.getElementById('yearTaskProject');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const projectId = projectSelect.value ? parseInt(projectSelect.value) : null;
+    
+    state.yearTasks.push({
+        id: Date.now(),
+        text: text,
+        projectId: projectId,
+        completed: false,
+        createdAt: new Date().toISOString()
+    });
+    Storage.set('yearTasks', state.yearTasks);
+    input.value = '';
+    renderYearTaskList();
+}
+
+function toggleYearTask(index) {
+    state.yearTasks[index].completed = !state.yearTasks[index].completed;
+    Storage.set('yearTasks', state.yearTasks);
+    renderYearTaskList();
+}
+
+function deleteYearTask(index) {
+    state.yearTasks.splice(index, 1);
+    Storage.set('yearTasks', state.yearTasks);
+    renderYearTaskList();
+}
+
 // 事件绑定
 function setupEvents() {
     // 数据同步
@@ -1485,6 +1660,30 @@ function setupEvents() {
         }
     };
     
+    // 月度计划
+    document.getElementById('openMonthPlanBtn').onclick = openMonthPlanModal;
+    document.getElementById('closeMonthPlanModal').onclick = closeMonthPlanModal;
+    document.getElementById('saveMonthPlan').onclick = () => { closeMonthPlanModal(); renderAll(); };
+    document.getElementById('addMonthTask').onclick = addMonthTask;
+    document.getElementById('monthTaskInput').onkeypress = e => { if (e.key === 'Enter') addMonthTask(); };
+    document.getElementById('monthTaskList').onclick = e => {
+        if (e.target.classList.contains('btn-del')) {
+            deleteMonthTask(parseInt(e.target.dataset.index));
+        }
+    };
+    
+    // 年度计划
+    document.getElementById('openYearPlanBtn').onclick = openYearPlanModal;
+    document.getElementById('closeYearPlanModal').onclick = closeYearPlanModal;
+    document.getElementById('saveYearPlan').onclick = () => { closeYearPlanModal(); renderAll(); };
+    document.getElementById('addYearTask').onclick = addYearTask;
+    document.getElementById('yearTaskInput').onkeypress = e => { if (e.key === 'Enter') addYearTask(); };
+    document.getElementById('yearTaskList').onclick = e => {
+        if (e.target.classList.contains('btn-del')) {
+            deleteYearTask(parseInt(e.target.dataset.index));
+        }
+    };
+    
     // 复盘
     document.getElementById('openReviewBtn').onclick = openReviewModal;
     document.getElementById('closeReviewModal').onclick = closeReviewModal;
@@ -1495,7 +1694,8 @@ function setupEvents() {
     // 收入
     document.getElementById('addIncomeBtn').onclick = addIncome;
     document.getElementById('incomeInput').onkeypress = e => { if (e.key === 'Enter') addIncome(); };
-    document.getElementById('setIncomeGoal').onclick = setIncomeGoal;
+    document.getElementById('setMonthGoal').onclick = setMonthGoal;
+    document.getElementById('setYearGoal').onclick = setYearGoal;
     document.getElementById('manageIncomeTypes').onclick = openTypeModal;
     document.getElementById('closeTypeModal').onclick = closeTypeModal;
     document.getElementById('addTypeBtn').onclick = addIncomeType;

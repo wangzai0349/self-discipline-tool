@@ -785,6 +785,73 @@ body {
     text-align: right;
 }
 
+/* 收入目标容器 */
+.income-goals-container {
+    margin-bottom: 20px;
+}
+
+.total-income-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.total-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.total-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.income-goal-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 2px solid #e9ecef;
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.goal-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.goal-amount {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.goal-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.goal-stats span:last-child {
+    font-weight: bold;
+    color: #27ae60;
+}
+
 .income-add-form {
     display: flex;
     gap: 8px;
@@ -1623,14 +1690,39 @@ body {
 .plan-item {
     display: flex;
     align-items: center;
+    gap: 10px;
     padding: 12px;
     background: #f8f9fa;
     border-radius: 8px;
     margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.plan-item.completed {
+    opacity: 0.6;
+    background: #e9ecef;
+}
+
+.plan-item.completed .task-text {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.plan-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 
 .plan-item .task-text {
     flex: 1;
+}
+
+.plan-item .task-project-tag {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: white;
 }
 
 .plan-item .task-points {
